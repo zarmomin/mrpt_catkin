@@ -1,1 +1,2 @@
-# mola_catkin
+# mrpt_catkin
+Catkin wrapper of the mrpt
