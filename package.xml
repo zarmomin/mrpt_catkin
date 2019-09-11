@@ -1,4 +1,4 @@
-<package>
+<package format="2">
   <name>mrpt_catkin</name>
   <version>0.0.1</version>
   <description>Catkin wrapper for mrpt.</description>
@@ -8,4 +8,6 @@
 
   <buildtool_depend>catkin</buildtool_depend>
   <buildtool_depend>catkin_simple</buildtool_depend>
+  <depend>eigen_catkin</depend>
+  <depend>gtsam_catkin</depend>
 </package>
