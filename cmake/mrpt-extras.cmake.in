@@ -1,3 +1,5 @@
-set(@PROJECT_NAME@_INCLUDE_DIRS @CATKIN_DEVEL_PREFIX@/include/mrpt)
+file(GLOB mrptModuleIncludes @CATKIN_DEVEL_PREFIX@/include/mrpt/*/include)
+set(@PROJECT_NAME@_INCLUDE_DIRS @CATKIN_DEVEL_PREFIX@/include)
+list(APPEND @PROJECT_NAME@_INCLUDE_DIRS ${mrptModuleIncludes})
 file(GLOB mrptLibraries @CATKIN_DEVEL_PREFIX@/lib/libmrpt*)
 set(@PROJECT_NAME@_LIBRARIES ${mrptLibraries})
