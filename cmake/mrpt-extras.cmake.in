@@ -1,5 +1,8 @@
+# add all the include directories for mrpt
 file(GLOB mrptModuleIncludes @CATKIN_DEVEL_PREFIX@/include/mrpt/*/include)
 set(@PROJECT_NAME@_INCLUDE_DIRS @CATKIN_DEVEL_PREFIX@/include)
 list(APPEND @PROJECT_NAME@_INCLUDE_DIRS ${mrptModuleIncludes})
-file(GLOB mrptLibraries @CATKIN_DEVEL_PREFIX@/lib/libmrpt*)
+
+# manually add all the libraries
+file(GLOB mrptLibraries "@CATKIN_DEVEL_PREFIX@/lib/libmrpt-bayes*" "@CATKIN_DEVEL_PREFIX@/lib/libmrpt-comms*" "@CATKIN_DEVEL_PREFIX@/lib/libmrpt-config*" "@CATKIN_DEVEL_PREFIX@/lib/libmrpt-containers*" "@CATKIN_DEVEL_PREFIX@/lib/libmrpt-core*" "@CATKIN_DEVEL_PREFIX@/lib/libmrpt-db*" "@CATKIN_DEVEL_PREFIX@/lib/libmrpt-detectors*" "@CATKIN_DEVEL_PREFIX@/lib/libmrpt-expr*" "@CATKIN_DEVEL_PREFIX@/lib/libmrpt-graphs*" "@CATKIN_DEVEL_PREFIX@/lib/libmrpt-gui*" "@CATKIN_DEVEL_PREFIX@/lib/libmrpt-hmtslam*" "@CATKIN_DEVEL_PREFIX@/lib/libmrpt-hwdrivers*" "@CATKIN_DEVEL_PREFIX@/lib/libmrpt-img*" "@CATKIN_DEVEL_PREFIX@/lib/libmrpt-io*" "@CATKIN_DEVEL_PREFIX@/lib/libmrpt-kinematics*" "@CATKIN_DEVEL_PREFIX@/lib/libmrpt-maps*" "@CATKIN_DEVEL_PREFIX@/lib/libmrpt-math*" "@CATKIN_DEVEL_PREFIX@/lib/libmrpt-nav*" "@CATKIN_DEVEL_PREFIX@/lib/libmrpt-obs*" "@CATKIN_DEVEL_PREFIX@/lib/libmrpt-opengl*" "@CATKIN_DEVEL_PREFIX@/lib/libmrpt-pbmap*" "@CATKIN_DEVEL_PREFIX@/lib/libmrpt-poses*" "@CATKIN_DEVEL_PREFIX@/lib/libmrpt-random*" "@CATKIN_DEVEL_PREFIX@/lib/libmrpt-ros1bridge*" "@CATKIN_DEVEL_PREFIX@/lib/libmrpt-rtti*" "@CATKIN_DEVEL_PREFIX@/lib/libmrpt-serialization*" "@CATKIN_DEVEL_PREFIX@/lib/libmrpt-slam*" "@CATKIN_DEVEL_PREFIX@/lib/libmrpt-system*" "@CATKIN_DEVEL_PREFIX@/lib/libmrpt-tfest*" "@CATKIN_DEVEL_PREFIX@/lib/libmrpt-topography*" "@CATKIN_DEVEL_PREFIX@/lib/libmrpt-vision*")
 set(@PROJECT_NAME@_LIBRARIES ${mrptLibraries})

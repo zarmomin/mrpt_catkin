@@ -3,7 +3,6 @@ set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++17")
 
 project(mrpt_catkin)
 
-
 find_package(catkin_simple REQUIRED)
 catkin_simple()
 
@@ -22,8 +21,6 @@ ExternalProject_Add(mrpt_src
   BUILD_COMMAND make -j8
   INSTALL_COMMAND make install -j8
 )
-
-include(cmake/print-properties-helper.cmake)
 
 cs_install()
 
