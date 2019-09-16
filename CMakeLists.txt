@@ -13,7 +13,7 @@ file(MAKE_DIRECTORY ${CATKIN_DEVEL_PREFIX}/include)
 # need to explicitly pass the SuiteSparse stuff so mrpt finds one that is compatible with the rest of the workspace
 ExternalProject_Add(mrpt_src
   GIT_REPOSITORY git@github.com:zarmomin/mrpt.git
-  GIT_TAG master
+  GIT_TAG ce1a28c9fdfe20b6b9b5ffccb45009d10e10fb76
   UPDATE_COMMAND ""
   PATCH_COMMAND patch -p1 < ${CMAKE_CURRENT_SOURCE_DIR}/patches/mainly-yaml.patch
   CMAKE_ARGS
