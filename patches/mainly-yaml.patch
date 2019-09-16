@@ -1,0 +1,203 @@
+diff --git a/CMakeLists.txt b/CMakeLists.txt
+index 0b90124e5..baa80f9e5 100644
+--- a/CMakeLists.txt
++++ b/CMakeLists.txt
+@@ -293,12 +293,21 @@ if(NOT MSVC)
+ 	endif()
+ endif()
+ 
++list(APPEND CMAKE_PREFIX_PATH ${suitesparse_guidance_dir})
++find_package(suitesparse REQUIRED)
++
++# remap from suitesparse to SuiteSparse to help CMake along
++if(suitesparse_FOUND)
++	set(CMAKE_MRPT_HAS_SUITESPARSE 1)
++	set(SuiteSparse_LIBRARIES ${suitesparse_LIBRARIES})
++	set(SuiteSparse_INCLUDE_DIRS ${suitesparse_INCLUDE_DIRS})
++	set(SuiteSparse_FOUND ${suitesparse_FOUND})
++endif()
+ 
+ set(CMAKE_MRPT_HAS_GZ_STREAMS ${CMAKE_MRPT_HAS_ZLIB})   # We have gz-streams is we have zlib:
+ 
+ include(cmakemodules/script_kinect.cmake REQUIRED)  # Kinect support in a set of different ways
+ include(cmakemodules/script_pcl.cmake REQUIRED)     # PCL library
+-include(cmakemodules/script_suitesparse.cmake REQUIRED)     # SuiteSparse libs
+ 
+ # Save the basic list of libraries (without MRPT-libs):
+ # -------------------------------------------------------------------------------------
+diff --git a/apps/rosbag2rawlog/CMakeLists.txt b/apps/rosbag2rawlog/CMakeLists.txt
+index 59cabd7a8..641c5a016 100644
+--- a/apps/rosbag2rawlog/CMakeLists.txt
++++ b/apps/rosbag2rawlog/CMakeLists.txt
+@@ -27,7 +27,7 @@ target_link_libraries(${PROJECT_NAME}
+ 	${rosbag_LIBRARIES}
+ 	${cv_bridge_LIBRARIES}
+ 	${tf2_LIBRARIES}
+-	${LIBYAMLCPP_LIBRARIES}
++	${YamlCpp_LIBRARIES}
+ )
+ 
+ target_include_directories(${PROJECT_NAME}
+diff --git a/cmakemodules/script_ros1.cmake b/cmakemodules/script_ros1.cmake
+index a699ada47..32c4fba2c 100644
+--- a/cmakemodules/script_ros1.cmake
++++ b/cmakemodules/script_ros1.cmake
+@@ -16,6 +16,8 @@ if (NOT DISABLE_ROS)
+ 	find_package(std_msgs QUIET)
+ 	find_package(geometry_msgs QUIET)
+ 	find_package(stereo_msgs QUIET)
++  find_package(nav_msgs QUIET)
++	find_package(tf2_msgs QUIET)
+ 
+ 	# tf2: try to find w/o the need for catkin (so we can use it from
+ 	# Debian build servers w/o ROS installed under /opt/ etc.)
+@@ -26,16 +28,6 @@ if (NOT DISABLE_ROS)
+ 	if (tf2_LIBRARIES)
+ 		set(tf2_FOUND TRUE)
+ 	endif()
+-	# tf2_msgs: idem (header-only lib)
+-	find_file(tf2_msgs name TFMessage.h PATHS /usr/include/tf2_msgs)
+-	if (tf2_msgs)
+-		set(tf2_msgs_FOUND TRUE)
+-	endif()
+-	# nav_msgs: idem (header-only lib)
+-	find_file(nav_msgs name OccupancyGrid.h  PATHS /usr/include/nav_msgs)
+-	if (nav_msgs)
+-		set(nav_msgs_FOUND TRUE)
+-	endif()
+ 
+ 	if ($ENV{VERBOSE})
+ 		message(STATUS "Found ROS1:")
+diff --git a/cmakemodules/script_show_final_summary.cmake b/cmakemodules/script_show_final_summary.cmake
+index 66a87260d..c80f553cf 100644
+--- a/cmakemodules/script_show_final_summary.cmake
++++ b/cmakemodules/script_show_final_summary.cmake
+@@ -134,7 +134,7 @@ SHOW_CONFIG_LINE_SYSTEM("PCL (Pointscloud library)           " CMAKE_MRPT_HAS_PC
+ SHOW_CONFIG_LINE_SYSTEM("SuiteSparse                         " CMAKE_MRPT_HAS_SUITESPARSE)
+ SHOW_CONFIG_LINE("VTK                                 " CMAKE_MRPT_HAS_VTK)
+ SHOW_CONFIG_LINE_SYSTEM("wxWidgets                           " CMAKE_MRPT_HAS_WXWIDGETS "[Version: ${wxWidgets_VERSION_STRING}]")
+-SHOW_CONFIG_LINE_SYSTEM("yamlcpp (YAML file format)          " CMAKE_MRPT_HAS_YAMLCPP "[Version: ${LIBYAMLCPP_VERSION}]")
++SHOW_CONFIG_LINE_SYSTEM("yamlcpp (YAML file format)          " CMAKE_MRPT_HAS_YAMLCPP "[Version: ${YamlCpp_VERSION}]")
+ message(STATUS  "")
+ 
+ message(STATUS " ______________________ GUI LIBRARIES ______________________")
+diff --git a/cmakemodules/script_yamlcpp.cmake b/cmakemodules/script_yamlcpp.cmake
+index 9b149fea3..26e01a2ab 100644
+--- a/cmakemodules/script_yamlcpp.cmake
++++ b/cmakemodules/script_yamlcpp.cmake
+@@ -1,5 +1,5 @@
+ # Check for yaml-cpp libray.
+-# It has a *-config.cmake files, but they are not present in Ubuntu 12.04 LTS, 
++# It has a *-config.cmake files, but they are not present in Ubuntu 12.04 LTS,
+ # so we use pkg-config there.
+ # ===================================================
+ set(CMAKE_MRPT_HAS_YAMLCPP 0)
+@@ -10,21 +10,16 @@ set(CMAKE_MRPT_HAS_YAMLCPP_SYSTEM 0)
+ option(DISABLE_YAMLCPP "Force not using yamlcpp" "OFF")
+ mark_as_advanced(DISABLE_YAMLCPP)
+ if(NOT DISABLE_YAMLCPP)
+-	# Invoke pkg-config for getting the configuration:
+-	if(PKG_CONFIG_FOUND)
+-		PKG_CHECK_MODULES(LIBYAMLCPP QUIET yaml-cpp)
+-		if (LIBYAMLCPP_FOUND)
+-			set(CMAKE_MRPT_HAS_YAMLCPP 1)
+-			set(CMAKE_MRPT_HAS_YAMLCPP_SYSTEM 1)
+-
+-			include_directories(${LIBYAMLCPP_INCLUDE_DIRS})
+-			if($ENV{VERBOSE})
+-				message(STATUS "LIBYAMLCPP_LIBRARIES    : ${LIBYAMLCPP_LIBRARIES}")
+-				message(STATUS "LIBYAMLCPP_INCLUDE_DIRS : ${LIBYAMLCPP_INCLUDE_DIRS}")
+-				message(STATUS "LIBYAMLCPP_VERSION      : ${LIBYAMLCPP_VERSION}")
+-			endif()
+-		endif()
++	FIND_PACKAGE(PkgConfig REQUIRED)
++	find_package(yaml_cpp_catkin QUIET)
++	if(${yaml_cpp_catkin_FOUND})
++		message("Found yaml_cpp_catkin, using instead of system library.")
++		set(YamlCpp_LIBRARIES ${yaml_cpp_catkin_LIBRARIES})
++		set(YamlCpp_INCLUDE_DIRS ${yaml_cpp_catkin_INCLUDE_DIRS})
++		set(CMAKE_MRPT_HAS_YAMLCPP 1)
++	else()
++		message("No yaml_cpp_catkin, using yaml-cpp system library instead.")
++		pkg_check_modules(YamlCpp REQUIRED yaml-cpp>=0.5)
++		set(CMAKE_MRPT_HAS_YAMLCPP_SYSTEM 1)
+ 	endif()
+-
+ endif()
+-
+diff --git a/libs/config/CMakeLists.txt b/libs/config/CMakeLists.txt
+index 408261773..6728d70d4 100644
+--- a/libs/config/CMakeLists.txt
++++ b/libs/config/CMakeLists.txt
+@@ -14,6 +14,6 @@ define_mrpt_lib(
+ 	)
+ 
+ if(BUILD_mrpt-config)
+-	target_link_libraries(config PRIVATE ${LIBYAMLCPP_LIBRARIES})
+-	target_include_directories(config PRIVATE ${LIBYAMLCPP_INCLUDE_DIRS})
++	target_link_libraries(config PRIVATE ${YamlCpp_LIBRARIES})
++	target_include_directories(config PRIVATE ${YamlCpp_INCLUDE_DIRS})
+ endif()
+diff --git a/libs/obs/CMakeLists.txt b/libs/obs/CMakeLists.txt
+index f04220f10..51ee58261 100644
+--- a/libs/obs/CMakeLists.txt
++++ b/libs/obs/CMakeLists.txt
+@@ -38,8 +38,8 @@ define_mrpt_lib(
+ 
+ if(BUILD_mrpt-obs)
+ 	if (CMAKE_MRPT_HAS_YAMLCPP)
+-		# ${LIBYAMLCPP_INCLUDE_DIRS}
+-		target_link_libraries(obs PRIVATE ${LIBYAMLCPP_LIBRARIES})
++	  message(ERROR "mrbt-obs has yamlcpp")
++		target_link_libraries(obs PRIVATE ${YamlCpp_LIBRARIES})
+ 	endif()
+ 
+ 
+diff --git a/libs/ros1bridge/CMakeLists.txt b/libs/ros1bridge/CMakeLists.txt
+index 9e020f2b6..19a1326c0 100644
+--- a/libs/ros1bridge/CMakeLists.txt
++++ b/libs/ros1bridge/CMakeLists.txt
+@@ -24,24 +24,23 @@ define_mrpt_lib(
+ 	mrpt-obs
+ 	)
+ 
+-if(BUILD_mrpt-ros1bridge)
+-	# Add the required libraries for linking:
+-	target_link_libraries(ros1bridge
+-		PUBLIC
+-		${roscpp_LIBRARIES}
+-		${rosbag_LIBRARIES}
+-		${cv_bridge_LIBRARIES}
+-		${pcl_conversions_LIBRARIES}
+-		${tf2_LIBRARIES}
+-	)
+ 
+-	target_include_directories(ros1bridge
+-		SYSTEM
+-		PUBLIC
+-		${roscpp_INCLUDE_DIRS}
+-		${rosbag_INCLUDE_DIRS}
+-		${cv_bridge_INCLUDE_DIRS}
+-		${pcl_conversions_INCLUDE_DIRS}
+-		${tf2_INCLUDE_DIRS}
+-	)
+-endif()
++# Add the required libraries for linking:
++target_link_libraries(ros1bridge
++	PUBLIC
++	${roscpp_LIBRARIES}
++	${rosbag_LIBRARIES}
++	${cv_bridge_LIBRARIES}
++	${pcl_conversions_LIBRARIES}
++	${tf2_LIBRARIES}
++)
++
++target_include_directories(ros1bridge
++	SYSTEM
++	PUBLIC
++	${roscpp_INCLUDE_DIRS}
++	${rosbag_INCLUDE_DIRS}
++	${cv_bridge_INCLUDE_DIRS}
++	${pcl_conversions_INCLUDE_DIRS}
++	${tf2_INCLUDE_DIRS}
++)
